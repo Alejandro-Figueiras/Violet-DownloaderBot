@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
+    "client": "node cliente.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -12,6 +13,9 @@
   "license": "ISC",
   "dependencies": {
     "dotenv": "^16.0.1",
-    "telegraf": "^4.8.6"
+    "input": "^1.0.1",
+    "telegraf": "^4.8.6",
+    "telegram": "^2.10.7",
+    "yargs": "^17.5.1"
   }
 }
