@@ -2,7 +2,11 @@ require('dotenv').config();
 const { Telegraf } = require('telegraf')
 const fs = require('fs');
 
-const bot = new Telegraf(process.env.BOT_TOKEN)
+const yargs = require('yargs/yargs')
+const { hideBin } = require('yargs/helpers')
+const argv = yargs(hideBin(process.argv)).argv
+
+const bot = new Telegraf(argv.token | process.env.BOT_TOKEN)
 bot.start((ctx) => ctx.reply('Bienvenido ' + ctx.from.first_name + ", mi nombre es Violet y te ayudaré en el manejo de archivos del lado del servidor"));
 bot.help((ctx) => ctx.reply('Send me a sticker'))
 bot.on('sticker', (ctx) => ctx.reply('👍'))
