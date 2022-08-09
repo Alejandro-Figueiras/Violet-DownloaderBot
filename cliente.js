@@ -20,9 +20,9 @@ const fs = require('fs');
 const input = require("input"); // npm i input
 const { getInputChannel } = require('telegram/Utils');
 
-const apiId = parseInt(argv.apiid | process.env.API_ID);
-const apiHash = argv.apihash | process.env.API_HASH;
-const stringSession = new StringSession(argv.session | process.env.API_TOKEN); // fill this later with the value from session.save()
+const apiId = parseInt((argv.apiid)?argv.apiid:process.env.API_ID);
+const apiHash = (argv.apihash)?argv.apihash:process.env.API_HASH;
+const stringSession = new StringSession((argv.session)?argv.session:process.env.API_TOKEN); // fill this later with the value from session.save()
 
 (async () => {
   console.log("Loading interactive example...");
