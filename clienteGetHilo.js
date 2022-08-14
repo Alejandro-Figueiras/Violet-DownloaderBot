@@ -3,8 +3,8 @@ apiid
 apihash
 session
 channel
-idstart
-idend
+id
+hilos
 */
 
 
@@ -19,6 +19,8 @@ const { StringSession } = require("telegram/sessions");
 const fs = require('fs');
 const input = require("input"); // npm i input
 const { getInputChannel } = require('telegram/Utils');
+
+const prompt = require('prompt');
 
 const apiId = parseInt((argv.apiid)?argv.apiid:process.env.API_ID);
 const apiHash = (argv.apihash)?argv.apihash:process.env.API_HASH;
@@ -44,17 +46,12 @@ const stringSession = new StringSession((argv.session)?argv.session:process.env.
   const channel = await client.invoke(new Api.channels.GetFullChannel({
     channel: argv.channel
   }));
-  
+
   let inp = await getInputChannel(channel.chats[0]);
-
-  let ids = [];
-  for (let k = argv.idstart; k <= argv.idend; k++) {
-    ids.push(k);
-  }
-
+  
   const msgs = await client.invoke(new Api.channels.GetMessages({
     channel: inp,
-    id: ids
+    id: [argv.id]
   }));
 
   for (const msg of msgs.messages) {
@@ -63,38 +60,24 @@ const stringSession = new StringSession((argv.session)?argv.session:process.env.
 
     const chunkSize = 1024*1024;
     const total = Math.ceil(msg.media.document.size / chunkSize)
-    for (let i = 0; i < total; i++) {
-      try {
-        const result = await client.invoke(new Api.upload.GetFile({
-          location: new Api.InputDocumentFileLocation({
-            id: msg.media.document.id,
-            accessHash: msg.media.document.accessHash,
-            fileReference: msg.media.document.fileReference,
-            thumbSize: ""
-          }),
-          offset: i*chunkSize,
-          limit: chunkSize,
-          precise: true,
-          cdnSupported: true
-        }));
-          if (i==0) {
-            fs.writeFileSync(`./out/${msg.media.document.attributes[0].fileName}`, result.bytes);
-          } else {
-            fs.appendFileSync(`./out/${msg.media.document.attributes[0].fileName}`, result.bytes)
-          }
-          console.log(`Downloaded ${(i+1)/total*100}%`);
-      } catch (e) {
-        i--;
-        console.error(e);
-        continue;
+
+    const hilos = argv.hilos;
+    
+    if (hilos>total) {
+      console.log("necesitas menos hilos");
+    } else {
+      let cant = Math.floor(total / hilos);
+      let agregado = total - (cant * hilos);
+
+      for (let i = 0; i < hilos; i++) {
+        console.log(`node clienteHilo.js --channel="${argv.channel}" --id=${argv.id} --offset=${i*cant} --cant=${(i==(hilos-1))?(cant+agregado):cant}`)
       }
     }
+    process.exit(0)
+    
   }
   
   //end code 
   
-    
-
-
 
 })();
