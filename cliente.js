@@ -19,10 +19,25 @@ const { StringSession } = require("telegram/sessions");
 const fs = require('fs');
 const input = require("input"); // npm i input
 const { getInputChannel } = require('telegram/Utils');
+const path = require('path');
 
 const apiId = parseInt((argv.apiid)?argv.apiid:process.env.API_ID);
 const apiHash = (argv.apihash)?argv.apihash:process.env.API_HASH;
 const stringSession = new StringSession((argv.session)?argv.session:process.env.API_TOKEN); // fill this later with the value from session.save()
+
+// gdrive
+const { Storage } = require('megajs')
+
+let storage;
+
+const upload = async(file) => {
+  const fileUp = await storage.upload({
+    name: path.basename(file),
+    size: fs.statSync(file).size
+  }, fs.createReadStream(file)).complete
+  console.log('The file was uploaded!', fileUp)
+  return;
+}
 
 (async () => {
   console.log("Loading interactive example...");
@@ -40,6 +55,12 @@ const stringSession = new StringSession((argv.session)?argv.session:process.env.
   console.log(client.session.save()); // Save this string to avoid logging in again
   
   // app code functionality
+
+  // mega login
+  storage = await new Storage({
+    email: process.env.MEGA_EMAIL,
+    password: process.env.MEGA_PASSWORD
+  }).ready
 
   const channel = await client.invoke(new Api.channels.GetFullChannel({
     channel: argv.channel
@@ -89,6 +110,9 @@ const stringSession = new StringSession((argv.session)?argv.session:process.env.
         continue;
       }
     }
+
+    // upload
+    await upload(`${(argv.out)?argv.out:"./out/"}${msg.media.document.attributes[0].fileName}`);
   }
   
   //end code 
