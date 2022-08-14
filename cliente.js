@@ -78,9 +78,9 @@ const stringSession = new StringSession((argv.session)?argv.session:process.env.
           cdnSupported: true
         }));
           if (i==0) {
-            fs.writeFileSync(`./out/${msg.media.document.attributes[0].fileName}`, result.bytes);
+            fs.writeFileSync(`${(argv.out)?argv.out:"./out/"}${msg.media.document.attributes[0].fileName}`, result.bytes);
           } else {
-            fs.appendFileSync(`./out/${msg.media.document.attributes[0].fileName}`, result.bytes)
+            fs.appendFileSync(`${(argv.out)?argv.out:"./out/"}${msg.media.document.attributes[0].fileName}`, result.bytes)
           }
           console.log(`Downloaded ${(i+1)/total*100}%`);
       } catch (e) {
