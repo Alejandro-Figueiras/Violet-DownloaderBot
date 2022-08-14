@@ -26,7 +26,7 @@ bot.command("id", async(ctx) => {
 })
 
 bot.command("uploadOutFiles", async(ctx) => {
-    const fatherPath = "./out/"
+    const fatherPath = (argv.out)?argv.out:"./out/";
     let dir = fs.readdirSync(fatherPath);
 
     let salida = "Encontrados los siguientes archivos:";
