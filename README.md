@@ -5,19 +5,22 @@ Y ademas como bono un cliente que descarga archivos de canales restringidos haci
 
 ## Cliente
 ```bash
-node cliente [--params...]
+node clienteMega [--params...]
 ```
 ### Datos
 Deben especificarse estos 3 primeros parametros para descargar los archivos desde la idstart hasta la idend en el canal o grupo restringido "channel". Estos datos se obtienen de un link:
 https://t.me/channel/24
 
 El out es la ruta de cache de los archivos, si usas heroku puede ser "/tmp/" y esta ultima debe terminar en '/'
+
+Para ciertos archivos es necesario usar un DC distinto, por lo q se hace la comprobacion y se descarga el archivo, pero no para todos es necesario realizar esto, asi que se deja a eleccion del usuario segun sus necesidades
 ```
 --channel
 --idstart
 --idend
 
 --out
+--useDcId=0|1
 ```
 
 ## Environment Variables

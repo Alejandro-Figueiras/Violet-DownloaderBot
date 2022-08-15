@@ -75,18 +75,37 @@ const upload = async(file) => {
     const total = Math.ceil(msg.media.document.size / chunkSize)
     for (let i = 0; i < total; i++) {
       try {
-        const result = await client.invoke(new Api.upload.GetFile({
-          location: new Api.InputDocumentFileLocation({
-            id: msg.media.document.id,
-            accessHash: msg.media.document.accessHash,
-            fileReference: msg.media.document.fileReference,
-            thumbSize: ""
-          }),
-          offset: i*chunkSize,
-          limit: chunkSize,
-          precise: true,
-          cdnSupported: true
-        }));
+        let result;
+        if (argv.useDcId) {
+          const sender = await client.getSender(msg.media.document.dcId);
+          result = await sender.send(new Api.upload.GetFile({
+            location: new Api.InputDocumentFileLocation({
+              id: msg.media.document.id,
+              accessHash: msg.media.document.accessHash,
+              fileReference: msg.media.document.fileReference,
+              thumbSize: ""
+            }),
+            offset: i*chunkSize,
+            limit: chunkSize,
+            precise: true,
+            cdnSupported: true
+          }));
+        } else {
+          result = await client.invoke(new Api.upload.GetFile({
+            location: new Api.InputDocumentFileLocation({
+              id: msg.media.document.id,
+              accessHash: msg.media.document.accessHash,
+              fileReference: msg.media.document.fileReference,
+              thumbSize: ""
+            }),
+            offset: i*chunkSize,
+            limit: chunkSize,
+            precise: true,
+            cdnSupported: true
+          }));
+        }
+
+
           if (i==0) {
             fs.writeFileSync(`${(argv.out)?argv.out:"./out/"}${msg.media.document.attributes[0].fileName}`, result.bytes);
           } else {
