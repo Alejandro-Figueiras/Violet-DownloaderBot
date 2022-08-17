@@ -3,7 +3,8 @@ const { Telegraf } = require('telegraf')
 const fs = require('fs');
 
 const yargs = require('yargs/yargs')
-const { hideBin } = require('yargs/helpers')
+const { hideBin } = require('yargs/helpers');
+const download = require('download');
 const argv = yargs(hideBin(process.argv)).argv
 
 console.log(argv.token | process.env.BOT_TOKEN);
@@ -45,6 +46,21 @@ bot.command("uploadOutFiles", async(ctx) => {
         fs.rmSync(fatherPath+file);
     }
 })
+
+bot.on("document", async(ctx) => {
+    let document = ctx.update.message.document;
+    let nombre = ctx.update.message.document.file_name;
+    let file = await ctx.telegram.getFileLink(document.file_id);
+    
+    let random = (Math.random()*1000*document.file_size / (1024 * 1024)).toString().replace('.', '');
+
+    ctx.reply(`Downloading file: ${nombre} ${(document.file_size / (1024 * 1024)).toFixed(2)}MB`);
+    await download(file, process.env.OUT_DIR+random);
+    fs.renameSync(process.env.OUT_DIR+random+'/'+file.href.split("/").pop().replace(file.search, ''), process.env.OUT_DIR+nombre);
+    fs.rmdirSync(process.env.OUT_DIR+random);
+    ctx.reply(`Downloaded file: ${document.file_name} ${(document.file_size / (1024 * 1024)).toFixed(2)}MB`);
+})
+
 bot.launch()
 console.log("Iniciando Violet")
 

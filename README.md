@@ -5,7 +5,7 @@ Y ademas como bono un cliente que descarga archivos de canales restringidos haci
 
 ## Cliente
 ```bash
-node clienteMega [--params...]
+node clienteTG2Mega [--params...]
 ```
 ### Datos
 Deben especificarse estos 3 primeros parametros para descargar los archivos desde la idstart hasta la idend en el canal o grupo restringido "channel". Estos datos se obtienen de un link:
@@ -27,6 +27,7 @@ Para ciertos archivos es necesario usar un DC distinto, por lo q se hace la comp
 Para el bot:
 ```
 BOT_TOKEN=""
+OUT_DIR=""
 ```
 
 Para el cliente:
