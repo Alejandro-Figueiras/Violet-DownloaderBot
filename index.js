@@ -65,6 +65,19 @@ bot.on("document", async(ctx) => {
     ctx.reply(`Downloaded file: \`${document.file_name}\` ${(document.file_size / (1024 * 1024)).toFixed(2)}MB`, {parse_mode: "Markdown"});
 })
 
+bot.command("download", async(ctx) => {
+    let link = "";
+    const chunks = ctx.message.text.split(" ");
+    chunks.shift();
+    for (let i = 0; i < chunks.length; i++) {
+        link += `${chunks[i]}${(i!=chunks.length-1)?" ":""}`;
+    }
+
+    ctx.reply(`Downloading file`, {parse_mode: "Markdown"});
+    await download(link, process.env.OUT_DIR);
+    ctx.reply(`Downloaded file`, {parse_mode: "Markdown"});
+})
+
 const megaLogin = async() => {
     return await new Storage({
         email: process.env.MEGA_EMAIL,
