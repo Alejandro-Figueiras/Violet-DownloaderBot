@@ -73,6 +73,8 @@ const upload = async(file) => {
 
 		const chunkSize = 1024*1024;
 		const total = Math.ceil(msg.media.document.size / chunkSize)
+		let ultimoPorciento = 0;
+		let error = false;
 		for (let i = 0; i < total; i++) {
 			try {
 				let result;
@@ -111,9 +113,23 @@ const upload = async(file) => {
 				} else {
 					fs.appendFileSync(`${(argv.out)?argv.out:"./out/"}${msg.media.document.attributes[0].fileName}`, result.bytes)
 				}
-				console.log(`Downloaded ${(i+1)/total*100}%`);
+
+				let porciento = parseInt((i+1)/total*50);
+				if (porciento != ultimoPorciento) {
+					ultimoPorciento = porciento;
+					let barra = "";
+					for (let n = 0; n < porciento/5; n++) barra += "=";
+					for (let n = porciento/5; n < 10; n++) barra += "-";
+					console.log(`Downloaded [${barra}] ${porciento*2}%`);
+				}
+				if (error) {
+					console.log(`Successfully downloaded i=${i}`);
+					error = false;
+				}
 			} catch (e) {
 				i--;
+				console.log(`ERROR FROM i=${i}`);
+				error = true;
 				console.error(e);
 				continue;
 			}
