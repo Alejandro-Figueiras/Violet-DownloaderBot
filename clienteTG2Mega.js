@@ -114,13 +114,13 @@ const upload = async(file) => {
 					fs.appendFileSync(`${(argv.out)?argv.out:"./out/"}${msg.media.document.attributes[0].fileName}`, result.bytes)
 				}
 
-				let porciento = parseInt((i+1)/total*200);
+				let porciento = parseInt((i+1)/total*100);
 				if (porciento != ultimoPorciento) {
 					ultimoPorciento = porciento;
 					let barra = "";
-					for (let n = 0; n < porciento/20; n++) barra += "=";
-					for (let n = (porciento/20)+0.001; n < 10; n++) barra += "-";
-					console.log(`Downloaded [${barra}] ${porciento/2}%`);
+					for (let n = 0; n < (porciento/5)+0.01; n++) barra += "=";
+					for (let n = porciento/5; n < 20; n++) barra += "-";
+					console.log(`Downloaded [${barra}] ${porciento}%`);
 				}
 				if (error) {
 					console.log(`Successfully downloaded i=${i}`);
