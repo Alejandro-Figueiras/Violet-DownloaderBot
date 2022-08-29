@@ -74,6 +74,7 @@ const TG2Mega = async (ctx, canal, idstart, idend) => {
 		const total = Math.ceil(msg.media.document.size / chunkSize)
 		let ultimoPorciento = 0;
 		let error = false;
+		let msgInfo = await ctx.reply("Downloaded [--------------------] 0%");
 		for (let i = 0; i < total; i++) {
 			try {
 				let result;
@@ -103,7 +104,7 @@ const TG2Mega = async (ctx, canal, idstart, idend) => {
 					let barra = "";
 					for (let n = 0; n < (porciento/5)+0.01; n++) barra += "=";
 					for (let n = porciento/5; n < 20; n++) barra += "-";
-					ctx.reply(`Downloaded [${barra}] ${porciento}%`);
+					ctx.telegram.editMessageText(ctx.message.chat.id, msgInfo.message_id, null, `Downloaded [${barra}] ${porciento}%`)
 				}
 				if (error) {
 					ctx.reply(`Successfully downloaded i=${i}`);
