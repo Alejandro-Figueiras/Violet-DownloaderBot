@@ -136,9 +136,7 @@ bot.command("tg2mega", async(ctx) => {
     const idstart = parseInt(chunks[2]);
     const idend = parseInt(chunks[3]);
     console.log(channel, idstart, idend);
-    await TG2Mega(ctx, channel, idstart, idend);
-    
-    return;
+    TG2Mega(ctx, channel, idstart, idend);
 });
 
 
