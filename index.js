@@ -162,3 +162,16 @@ console.log("Iniciando Violet")
 // Enable graceful stop
 process.once('SIGINT', () => bot.stop('SIGINT'))
 process.once('SIGTERM', () => bot.stop('SIGTERM'))
+
+// para heroku
+const express = require('express')
+const PORT = process.env.PORT || 5000
+const app = express()
+
+app.get('/', (req, res) => {
+    res.send('Hello World!')
+})
+
+app.listen(PORT, () => {
+    console.log(`Violet listening ${PORT}`)
+})

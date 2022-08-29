@@ -40,8 +40,10 @@ const startClient = async() => {
 			await input.text("Please enter the code you received: "),
 		onError: (err) => console.log(err),
 	});
-	console.log("You should now be connected. Save this token for the next time:");
-	if (!process.env.API_TOKEN) console.log(client.session.save()); // Save this string to avoid logging in again
+	if (!process.env.API_TOKEN) {
+		console.log("You should now be connected. Save this token for the next time:");
+		console.log(client.session.save());
+	} // Save this string to avoid logging in again
 	return client;
 }
 
