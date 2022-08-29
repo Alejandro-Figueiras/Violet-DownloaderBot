@@ -41,12 +41,12 @@ const startClient = async() => {
 		onError: (err) => console.log(err),
 	});
 	console.log("You should now be connected. Save this token for the next time:");
-	console.log(client.session.save()); // Save this string to avoid logging in again
+	if (!process.env.API_TOKEN) console.log(client.session.save()); // Save this string to avoid logging in again
 	return client;
 }
 
 const TG2Mega = async (ctx, canal, idstart, idend) => {
-	const client = startClient();
+	const client = await startClient();
 	// app code functionality
 
 	const channel = await client.invoke(new Api.channels.GetFullChannel({
