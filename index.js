@@ -10,6 +10,7 @@ const { Storage } = require("megajs")
 // YARGS
 const yargs = require('yargs/yargs')
 const { hideBin } = require('yargs/helpers');
+const TG2Mega = require('./clienteTG2Mega');
 const argv = yargs(hideBin(process.argv)).argv
 
 const bot = new Telegraf((argv.token)?argv.token:process.env.BOT_TOKEN)
@@ -128,6 +129,17 @@ const uploadMegaAll = async(ctx, deleteFile) => {
         if (deleteFile) fs.rmSync(file);
     }
 }
+
+bot.command("tg2mega", async(ctx) => {
+    const chunks = ctx.message.text.split(" ");
+    const channel = chunks[1];
+    const idstart = parseInt(chunks[2]);
+    const idend = parseInt(chunks[3]);
+    console.log(channel, idstart, idend);
+    await TG2Mega(ctx, channel, idstart, idend);
+    
+    return;
+});
 
 
 bot.command("uploadMega", async(ctx) => await uploadMega(ctx, false));

@@ -1,9 +1,3 @@
-require('dotenv').config();
-
-const yargs = require('yargs/yargs')
-const { hideBin } = require('yargs/helpers')
-const argv = yargs(hideBin(process.argv)).argv
-
 const { TelegramClient, Api } = require("telegram");
 const { StringSession } = require("telegram/sessions");
 const fs = require('fs');
@@ -11,26 +5,31 @@ const input = require("input"); // npm i input
 const { getInputChannel } = require('telegram/Utils');
 const path = require('path');
 
-const apiId = parseInt((argv.apiid)?argv.apiid:process.env.API_ID);
-const apiHash = (argv.apihash)?argv.apihash:process.env.API_HASH;
-const stringSession = new StringSession((argv.session)?argv.session:process.env.API_TOKEN); // fill this later with the value from session.save()
+const apiId = parseInt(process.env.API_ID);
+const apiHash = process.env.API_HASH;
+const stringSession = new StringSession(process.env.API_TOKEN); // fill this later with the value from session.save()
 
 // mega
 const { Storage } = require('megajs')
 
 let storage;
 
-const upload = async(file) => {
-    console.log("Uploading to MEGA:", path.basename(file));
+const upload = async(file, ctx) => {
+	storage = await new Storage({
+		email: process.env.MEGA_EMAIL,
+		password: process.env.MEGA_PASSWORD
+	}).ready
+
+    ctx.reply("Uploading to MEGA:", path.basename(file));
     await storage.upload({
         name: path.basename(file),
         size: fs.statSync(file).size
     }, fs.createReadStream(file)).complete
-    console.log('The file was uploaded!');
+    ctx.reply('The file was uploaded!');
     return;
 }
 
-(async () => {
+const startClient = async() => {
 	const client = new TelegramClient(stringSession, apiId, apiHash, {
 		connectionRetries: 30,
 	});
@@ -43,23 +42,21 @@ const upload = async(file) => {
 	});
 	console.log("You should now be connected. Save this token for the next time:");
 	console.log(client.session.save()); // Save this string to avoid logging in again
-	
+	return client;
+}
+
+const TG2Mega = async (ctx, canal, idstart, idend) => {
+	const client = startClient();
 	// app code functionality
 
-	// mega login
-	storage = await new Storage({
-		email: process.env.MEGA_EMAIL,
-		password: process.env.MEGA_PASSWORD
-	}).ready
-
 	const channel = await client.invoke(new Api.channels.GetFullChannel({
-		channel: argv.channel
+		channel: canal
 	}));
 	
 	let inp = await getInputChannel(channel.chats[0]);
 
 	let ids = [];
-	for (let k = argv.idstart; k <= argv.idend; k++) {
+	for (let k = idstart; k <= idend; k++) {
 		ids.push(k);
 	}
 
@@ -69,7 +66,7 @@ const upload = async(file) => {
 	}));
 
 	for (const msg of msgs.messages) {
-		console.log(`Downloading ${msg.media.document.attributes[0].fileName} (${msg.media.document.size/(1024*1024)}MB)`);
+		ctx.reply(`Downloading ${msg.media.document.attributes[0].fileName} (${msg.media.document.size/(1024*1024)}MB)`);
 
 		const chunkSize = 1024*1024;
 		const total = Math.ceil(msg.media.document.size / chunkSize)
@@ -78,40 +75,24 @@ const upload = async(file) => {
 		for (let i = 0; i < total; i++) {
 			try {
 				let result;
-				if (argv.useDcId) {
-					const sender = await client.getSender(msg.media.document.dcId);
-					result = await sender.send(new Api.upload.GetFile({
-						location: new Api.InputDocumentFileLocation({
-							id: msg.media.document.id,
-							accessHash: msg.media.document.accessHash,
-							fileReference: msg.media.document.fileReference,
-							thumbSize: ""
-						}),
-						offset: i*chunkSize,
-						limit: chunkSize,
-						precise: true,
-						cdnSupported: true
-					}));
-				} else {
-					result = await client.invoke(new Api.upload.GetFile({
-						location: new Api.InputDocumentFileLocation({
-							id: msg.media.document.id,
-							accessHash: msg.media.document.accessHash,
-							fileReference: msg.media.document.fileReference,
-							thumbSize: ""
-						}),
-						offset: i*chunkSize,
-						limit: chunkSize,
-						precise: true,
-						cdnSupported: true
-					}));
-				}
-
+				const sender = await client.getSender(msg.media.document.dcId);
+				result = await sender.send(new Api.upload.GetFile({
+					location: new Api.InputDocumentFileLocation({
+						id: msg.media.document.id,
+						accessHash: msg.media.document.accessHash,
+						fileReference: msg.media.document.fileReference,
+						thumbSize: ""
+					}),
+					offset: i*chunkSize,
+					limit: chunkSize,
+					precise: true,
+					cdnSupported: true
+				}));
 
 				if (i==0) {
-					fs.writeFileSync(`${(argv.out)?argv.out:"./out/"}${msg.media.document.attributes[0].fileName}`, result.bytes);
+					fs.writeFileSync(`${(process.env.OUT_DIR)?process.env.OUT_DIR:"./out/"}${msg.media.document.attributes[0].fileName}`, result.bytes);
 				} else {
-					fs.appendFileSync(`${(argv.out)?argv.out:"./out/"}${msg.media.document.attributes[0].fileName}`, result.bytes)
+					fs.appendFileSync(`${(process.env.OUT_DIR)?process.env.OUT_DIR:"./out/"}${msg.media.document.attributes[0].fileName}`, result.bytes)
 				}
 
 				let porciento = parseInt((i+1)/total*100);
@@ -120,24 +101,27 @@ const upload = async(file) => {
 					let barra = "";
 					for (let n = 0; n < (porciento/5)+0.01; n++) barra += "=";
 					for (let n = porciento/5; n < 20; n++) barra += "-";
-					console.log(`Downloaded [${barra}] ${porciento}%`);
+					ctx.reply(`Downloaded [${barra}] ${porciento}%`);
 				}
 				if (error) {
-					console.log(`Successfully downloaded i=${i}`);
+					ctx.reply(`Successfully downloaded i=${i}`);
 					error = false;
 				}
 			} catch (e) {
 				i--;
-				console.log(`ERROR FROM i=${i}`);
+				ctx.reply(`ERROR FROM i=${i}`);
 				error = true;
+				ctx.reply(e)
 				console.error(e);
 				continue;
 			}
 		}
 
 		// upload
-		await upload(`${(argv.out)?argv.out:"./out/"}${msg.media.document.attributes[0].fileName}`);
+		await upload(`${(process.env.OUT_DIR)?process.env.OUT_DIR:"./out/"}${msg.media.document.attributes[0].fileName}`, ctx);
 	}
 	//end code 
+	return;
+};
 
-})();
+module.exports = TG2Mega;
