@@ -20,7 +20,7 @@ const upload = async(file, ctx) => {
 		password: process.env.MEGA_PASSWORD
 	}).ready
 
-    await ctx.reply("Uploading to MEGA:", path.basename(file));
+    await ctx.reply(`Uploading to MEGA: ${path.basename(file)}`);
     await storage.upload({
         name: path.basename(file),
         size: fs.statSync(file).size
