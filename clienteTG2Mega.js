@@ -20,12 +20,12 @@ const upload = async(file, ctx) => {
 		password: process.env.MEGA_PASSWORD
 	}).ready
 
-    ctx.reply("Uploading to MEGA:", path.basename(file));
+    await ctx.reply("Uploading to MEGA:", path.basename(file));
     await storage.upload({
         name: path.basename(file),
         size: fs.statSync(file).size
     }, fs.createReadStream(file)).complete
-    ctx.reply('The file was uploaded!');
+    await ctx.reply('The file was uploaded!');
     return;
 }
 
@@ -68,7 +68,7 @@ const TG2Mega = async (ctx, canal, idstart, idend) => {
 	}));
 
 	for (const msg of msgs.messages) {
-		ctx.reply(`Downloading ${msg.media.document.attributes[0].fileName} (${msg.media.document.size/(1024*1024)}MB)`);
+		await ctx.reply(`Downloading ${msg.media.document.attributes[0].fileName} (${msg.media.document.size/(1024*1024)}MB)`);
 
 		const chunkSize = 1024*1024;
 		const total = Math.ceil(msg.media.document.size / chunkSize)
@@ -104,17 +104,17 @@ const TG2Mega = async (ctx, canal, idstart, idend) => {
 					let barra = "";
 					for (let n = 0; n < (porciento/5)+0.01; n++) barra += "=";
 					for (let n = porciento/5; n < 20; n++) barra += "-";
-					ctx.telegram.editMessageText(ctx.message.chat.id, msgInfo.message_id, null, `Downloaded [${barra}] ${porciento}%`)
+					await ctx.telegram.editMessageText(ctx.message.chat.id, msgInfo.message_id, null, `Downloaded [${barra}] ${porciento}%`)
 				}
 				if (error) {
-					ctx.reply(`Successfully downloaded i=${i}`);
+					await ctx.reply(`Successfully downloaded i=${i}`);
 					error = false;
 				}
 			} catch (e) {
 				i--;
-				ctx.reply(`ERROR FROM i=${i}`);
+				await ctx.reply(`ERROR FROM i=${i}`);
 				error = true;
-				ctx.reply(e)
+				await ctx.reply(e)
 				console.error(e);
 				continue;
 			}
